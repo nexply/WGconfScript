@@ -62,7 +62,7 @@ ip a|grep inet|grep brd|awk '{print $1"\t"$2}'
 webip=`curl -s "http://checkip.dyndns.org/"|cut -d "<" -f7|cut -c 26-`
 echo "webip	$webip"
 read -e -p "Enter server address[serverIP]: " saddr
-read -e -p "Enter AllowedIPs[*.*.*.*/*]: " allowip
+read -e -p "Enter AllowedIPs[0.0.0.0/0]: " allowip
 
 spubkey=`cat $sconf | grep "# pubkey:" | awk '{print $3}'`
 sport=`cat $sconf | grep "ListenPort =" | awk '{print $3}'`
