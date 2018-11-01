@@ -59,7 +59,7 @@ exit
 fi
 read -e -p "Set VPN client address[10.*.*.*]: " cvaddr
 ip a|grep inet|grep brd|awk '{print $1"\t"$2}'
-webip=`curl -s ifconfig.me`
+webip=`curl -s "http://checkip.dyndns.org/"|cut -d "<" -f7|cut -c 26-`
 echo "webip	$webip"
 read -e -p "Enter server address[serverIP]: " saddr
 read -e -p "Enter AllowedIPs[*.*.*.*/*]: " allowip
