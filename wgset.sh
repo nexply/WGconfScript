@@ -13,13 +13,13 @@ pubkey=`echo $privkey | wg pubkey`
 function server {
 clear
 ls
-read -e -p "Enter name of the server file: " sname
+read -e -p "Enter the server profile name: " sname
 sconf=${sname}.conf
 if [ -f "$sconf" ]; then
 echo "Profile $sconf already exists!!"
 exit
 fi
-read -e -p "Set VPN server address[10.*.*.1]: " svaddr
+read -e -p "Set the VPN server address[10.*.*.1]: " svaddr
 read -e -p "Enter ListenPort: " port
 mkkey
 
@@ -51,13 +51,13 @@ EOFF
 function clien {
 clear
 cat $sconf
-read -e -p "Enter name of the client configuration file: " cname
+read -e -p "Enter the client profile name: " cname
 cconf=${cname}.conf
 if [ -f "$cconf" ]; then
 echo "Profile $cconf already exists!!"
 exit
 fi
-read -e -p "Set VPN client address[10.*.*.*]: " cvaddr
+read -e -p "Set the VPN client address[10.*.*.*]: " cvaddr
 ip a|grep inet|grep brd|awk '{print $1"\t"$2}'
 webip=`curl -s ip.6655.com/ip.aspx`
 echo "webip	$webip"
@@ -116,7 +116,7 @@ clien
 exit ;;
 "Add client configuration")
 ls
-read -e -p "Enter name of the server configuration file[**.conf]: " sconf
+read -e -p "Enter the server profile name[**.conf]: " sconf
 if [ ! -f "$sconf" ]; then
 echo "Profile $sconf does not exist!!"
 ls
