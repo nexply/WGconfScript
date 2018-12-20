@@ -19,7 +19,7 @@ ls
 read -e -p "Enter the server profile name: " sname
 sconf=${sname}.conf
 if [ -f "$sconf" ]; then
-echo "Profile $sconf already exists!!"
+echo -e "\033[31m\033[01m Profile \"$sconf\" already exists!! \033[0m"
 exit
 fi
 read -e -p "Set the VPN server address[10.*.*.1]: " svaddr
@@ -68,7 +68,7 @@ read -e -p "Enter the client profile name: " cname
 #	echo "Profile $cconf already exists!!"
 #	exit
 #fi
-#read -e -p "Set the VPN client address[10.*.*.*]: " cvaddr
+#read -e -p "Set the VPN client address[10.*.*.*]: " caddr
 ip a|grep inet|grep brd|awk '{print $1"\t"$2}'
 webip=`curl -s ip.6655.com/ip.aspx`
 echo "webip	$webip"
@@ -82,16 +82,24 @@ sport=`cat $sconf | grep "ListenPort =" | awk '{print $3}'`
 ls
 read -e -p "Enter first number: " numa
 read -e -p "Enter last number: " numb
-# 写入客户端配置文件
 
+# 写入客户端配置文件
 while [ ${numb} -ge ${numa} ]
 do
+
 cconf=${cname}${numa}.conf
-if [ -f "$cconf" ]
-then
-echo "Profile $cconf already exists!!"
+# 判断客户端配置文件是否存在
+if [ -f "$cconf" ]; then
+echo -e "\033[31m\033[01m Profile \"$cconf\" already exists!! \033[0m"
 exit
 fi
+# 判断客户端IP是否已经使用
+clienIP=`cat $sconf |grep "${caddra}${numa}/32"`
+if [ -n "${clienIP}" ]; then
+echo -e "\033[31m\033[01m Clien'IP \"${caddra}${numa}\" already exists!! \033[0m"
+exit
+fi
+
 mkkey
 cat << EOFF > $cconf
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -100,7 +108,7 @@ cat << EOFF > $cconf
 # pubkey: $pubkey
 
 [Interface]
-Address = ${caddra}.$[${numa}+1]/24
+Address = ${caddra}${numa}/24
 # ClientPrivateKey
 PrivateKey = $privkey
 # Switch DNS server while connected
@@ -121,7 +129,7 @@ cat << EOFE >> $sconf
 # $cconf
 # ClientPublicKey
 PublicKey = $pubkey
-AllowedIPs = ${caddra}.$[${numa}+1]/32
+AllowedIPs = ${caddra}${numa}/32
 
 EOFE
 
@@ -145,13 +153,13 @@ exit ;;
 ls
 read -e -p "Enter the server profile name[**.conf]: " sconf
 if [ ! -f "$sconf" ]; then
-echo "Profile $sconf does not exist!!"
+echo -e "\033[31m\033[01m Profile \"$sconf\" does not exist!! \033[0m"
 ls
 exit
 fi
 clien
 exit ;;
 *)
-echo "Sorry, wrong selection!!";;
+echo -e "\033[31m\033[01m Sorry, wrong selection!! \033[0m";;
 esac
 done
