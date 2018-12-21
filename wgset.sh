@@ -121,14 +121,14 @@ Address = ${caddra}${numa}/24
 # ClientPrivateKey
 PrivateKey = $privkey
 # Switch DNS server while connected
-# DNS = 1.1.1.1
+DNS = 1.1.1.1
 
 [Peer]
 # ServerPublicKey
 PublicKey = $spubkey
 Endpoint = ${saddr}:$sport
 AllowedIPs = $allowip
-#PersistentKeepalive = 25
+PersistentKeepalive = 25
 
 EOFF
 
