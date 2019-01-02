@@ -117,9 +117,9 @@ cat << EOFF > $cconf
 # pubkey: $pubkey
 
 [Interface]
-Address = ${caddra}${numa}/24
 # ClientPrivateKey
 PrivateKey = $privkey
+Address = ${caddra}${numa}/24
 # Switch DNS server while connected
 DNS = 1.1.1.1
 
