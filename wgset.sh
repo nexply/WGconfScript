@@ -49,7 +49,7 @@ cat << EOFF >> $sconf
 [Interface]
 # Ubuntu运行 WireGuard 时要执行的 iptables 防火墙规则，用于打开NAT转发之类的。
 # 如果你的服务器主网卡名称不是 eth0 ，那么请修改下面防火墙规则中最后的 eth0 为你的主网卡名称。
-#PostUp   = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o `ip route|grep default|awk -F"dev" '{print $2}'|awk '{print $1}'` -j MASQUERADE
+#PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o `ip route|grep default|awk -F"dev" '{print $2}'|awk '{print $1}'` -j MASQUERADE
 
 # Ubuntu停止 WireGuard 时要执行的 iptables 防火墙规则，用于关闭NAT转发之类的。
 # 如果你的服务器主网卡名称不是 eth0 ，那么请修改下面防火墙规则中最后的 eth0 为你的主网卡名称。
@@ -121,7 +121,7 @@ cat << EOFF > $cconf
 PrivateKey = $privkey
 Address = ${caddra}${numa}/24
 # Switch DNS server while connected
-DNS = 1.1.1.1
+#DNS = 1.1.1.1
 
 [Peer]
 # ServerPublicKey
