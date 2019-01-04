@@ -42,8 +42,8 @@ cat << EOFF >> $sconf
 # firewall-cmd --permanent --direct --add-rule ipv4 filter FORWARD 0 -i ${sname} -o `ip route|grep default|awk -F"dev" '{print $2}'|awk '{print $1}'` -j ACCEPT
 # firewall-cmd --reload
 # 
-# firewall-cmd --permanent --remove-rich-rule="\`firewall-cmd --list-rich-rules\`"
-# firewall-cmd --permanent --direct --remove-rule \`firewall-cmd --direct --get-all-rules\`
+# firewall-cmd --permanent --remove-rich-rule="rule family=ipv4 source address=${svaddr}/24 masquerade"
+# firewall-cmd --permanent --direct --remove-rule ipv4 filter FORWARD 0 -i ${sname} -o `ip route|grep default|awk -F"dev" '{print $2}'|awk '{print $1}'` -j ACCEPT
 # firewall-cmd --reload
 
 [Interface]
@@ -69,12 +69,7 @@ clear
 echo -e "\033[32m `cat $sconf` \033[0m"
 echo -e "\033[34m\033[01m 输入客户端配置文件名称 \033[0m"
 read -e -p "Enter the client profile name: " cname
-#cconf=${cname}.conf
-#if [ -f "$cconf" ]; then
-#	echo "Profile $cconf already exists!!"
-#	exit
-#fi
-#read -e -p "Set the VPN client address[10.*.*.*]: " caddr
+
 ip a|grep inet|grep brd|awk '{print $1"\t"$2}'
 webip=`curl -s ip.6655.com/ip.aspx`
 echo "webip	$webip"
@@ -87,11 +82,19 @@ caddra=`cat $sconf |grep Address | awk '{print $3}' | awk -F. '{print $1"."$2"."
 spubkey=`cat $sconf | grep "# pubkey:" | awk '{print $3}'`
 sport=`cat $sconf | grep "ListenPort =" | awk '{print $3}'`
 
-echo -e "\033[33m `ls` \033[0m"
-echo -e "\033[34m\033[01m 设置本次配置第一个客户端IP末尾数字,范围2<=X<=254 \033[0m"
+# echo -e "\033[33m `ls` \033[0m"
+echo -e "\033[34m\033[01m 设置本次配置第一个客户端 IP 末尾数字,范围 2<=X<=254 \033[0m"
 read -e -p "Enter first number: " numa
-echo -e "\033[34m\033[01m 设置本次配置最后一个客户端IP末尾数字,范围X<=Y<=254 \033[0m"
+if [ $numa -lt 2 ]; then
+	echo -e "\033[31m\033[01m 起始编号不能小于 2 !! \033[0m"
+	exit
+fi
+echo -e "\033[34m\033[01m 设置本次配置最后一个客户端 IP 末尾数字,范围 X<=Y<=254 \033[0m"
 read -e -p "Enter last number: " numb
+if [ $numa -gt $numb ]; then
+	echo -e "\033[31m\033[01m 结束编号不能小于起始编号 !!! \033[0m"
+	exit
+fi
 
 # 写入客户端配置文件
 while [ ${numb} -ge ${numa} ]; do
