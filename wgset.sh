@@ -135,9 +135,9 @@ Address = ${caddra}${numa}/24
 #DNS = 1.1.1.1
 
 [Peer]
+Endpoint = ${saddr}:$sport
 # ServerPublicKey
 PublicKey = $spubkey
-Endpoint = ${saddr}:$sport
 AllowedIPs = $allowip
 PersistentKeepalive = 25
 
