@@ -39,21 +39,21 @@ cat << EOFF >> $sconf
 # CentOS运行Wireguard服务器时需要设置如下防火墙策略，并且开启IP转发功能。
 # firewall cmd:
 # firewall-cmd --permanent --add-rich-rule="rule family=ipv4 source address=${svaddr}/24 masquerade"
-# firewall-cmd --permanent --direct --add-rule ipv4 filter FORWARD 0 -i ${sname} -o `ip route|grep default|awk -F"dev" '{print $2}'|awk '{print $1}'` -j ACCEPT
+# firewall-cmd --permanent --direct --add-rule ipv4 filter FORWARD 0 -i ${sname} -o `ip route|grep default|awk '{print $5}'` -j ACCEPT
 # firewall-cmd --reload
-# 
+
 # firewall-cmd --permanent --remove-rich-rule="rule family=ipv4 source address=${svaddr}/24 masquerade"
-# firewall-cmd --permanent --direct --remove-rule ipv4 filter FORWARD 0 -i ${sname} -o `ip route|grep default|awk -F"dev" '{print $2}'|awk '{print $1}'` -j ACCEPT
+# firewall-cmd --permanent --direct --remove-rule ipv4 filter FORWARD 0 -i ${sname} -o `ip route|grep default|awk '{print $5}'` -j ACCEPT
 # firewall-cmd --reload
 
 [Interface]
 # Ubuntu运行 WireGuard 时要执行的 iptables 防火墙规则，用于打开NAT转发之类的。
 # 如果你的服务器主网卡名称不是 eth0 ，那么请修改下面防火墙规则中最后的 eth0 为你的主网卡名称。
-#PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o `ip route|grep default|awk -F"dev" '{print $2}'|awk '{print $1}'` -j MASQUERADE
+#PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
 
 # Ubuntu停止 WireGuard 时要执行的 iptables 防火墙规则，用于关闭NAT转发之类的。
 # 如果你的服务器主网卡名称不是 eth0 ，那么请修改下面防火墙规则中最后的 eth0 为你的主网卡名称。
-#PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o `ip route|grep default|awk -F"dev" '{print $2}'|awk '{print $1}'` -j MASQUERADE
+#PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
 
 # ServerPriateKey
 PrivateKey = $privkey
@@ -122,11 +122,11 @@ cat << EOFF > $cconf
 [Interface]
 # Ubuntu运行 WireGuard 时要执行的 iptables 防火墙规则，用于打开NAT转发之类的。
 # 如果你的服务器主网卡名称不是 eth0 ，那么请修改下面防火墙规则中最后的 eth0 为你的主网卡名称。
-#PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o `ip route|grep default|awk -F"dev" '{print $2}'|awk '{print $1}'` -j MASQUERADE
+#PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
 
 # Ubuntu停止 WireGuard 时要执行的 iptables 防火墙规则，用于关闭NAT转发之类的。
 # 如果你的服务器主网卡名称不是 eth0 ，那么请修改下面防火墙规则中最后的 eth0 为你的主网卡名称。
-#PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o `ip route|grep default|awk -F"dev" '{print $2}'|awk '{print $1}'` -j MASQUERADE
+#PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
 
 # ClientPrivateKey
 PrivateKey = $privkey
