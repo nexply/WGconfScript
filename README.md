@@ -1,7 +1,7 @@
 # WireGuard configuration generation script
 # WireGuard 配置文件生成脚本
 
-> 目前只测试了centos系统，其他类型系统请自行修改。
+> 目前只测试了centos系统，其他类型系统请自行修改 防火墙规则。
 
 > 安装WireGuard后，创建/etc/wireguard文件夹。
 
