@@ -6,20 +6,27 @@ from argparse import ArgumentParser
 
 
 def main():
-    parser = ArgumentParser(description=u'需要输入“网段”和“IP”')
+    parser = ArgumentParser(description=u'支持从某个网段排除特定IP！')
     parser.add_argument('network', type=str, metavar=u'网段',
-                        help=u'输入网段，如：192.168.1.0/24')
-    parser.add_argument('ip', type=str, metavar='IP',
-                        help=u'输入要排除的ip，如：192.168.1.128')
+                        help=u'如：192.168.1.0/24')
+    parser.add_argument('ip', type=str, metavar=u'要排除的IP',
+                        help=u'如：192.168.1.128')
     args = parser.parse_args()
 
-    ip = IPNetwork(args.network).cidr
-    nip = IPAddress(args.ip)
+    try:
+        ipnet = IPNetwork(args.network).cidr
+    except Exception as e:
+        print u'输入网段错误：{}'.format(e)
+
+    try:
+        nip = IPAddress(args.ip)
+    except Exception as e:
+        print u'输入IP错误：{}'.format(e)
 
     # ip = IPNetwork('192.168.1.23/16').cidr
     # nip = IPAddress('192.168.1.123')
 
-    ips = IPSet([ip])
+    ips = IPSet([ipnet])
     ips.remove(nip)
 
     print ', '.join(outip for outip in map(str, ips.iter_cidrs()))
