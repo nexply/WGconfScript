@@ -7,6 +7,8 @@
 
 > 将脚本下载到/etc/wireguard文件夹内。
 
+> removeip.py 脚本可从某网段排除特定IP，方便特殊情况配置
+
 ## 运行脚本
 ```sh
 bash wgset.sh
