@@ -76,7 +76,7 @@ echo "webip	$webip"
 echo -e "\033[34m\033[01m 输入服务公网IP \033[0m"
 read -e -p "Enter server address[serverIP]: " saddr
 echo -e "\033[34m\033[01m 设置客户端转发IP段，0.0.0.0/0表示全局转发 \033[0m"
-read -e -p "Enter AllowedIPs[0.0.0.0/0]: " allowip
+read -e -p "Enter AllowedIPs[0.0.0.0/0, ::0/0]: " allowip
 
 caddra=`cat $sconf |grep Address | awk '{print $3}' | awk -F. '{print $1"."$2"."$3"."}'`
 spubkey=`cat $sconf | grep "# pubkey:" | awk '{print $3}'`
