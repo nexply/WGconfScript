@@ -45,13 +45,11 @@ cat << EOFF >> $sconf
 # firewall-cmd --permanent --direct --remove-rule ipv4 filter FORWARD 0 -i ${sname} -o `ip route|grep default|awk '{print $5}'` -j ACCEPT
 
 # ipv6
-
 # firewall-cmd --permanent --add-rich-rule="rule family=ipv6 source address=fd10:db31:0203:ab31::1/64 masquerade"
 # firewall-cmd --permanent --direct --add-rule ipv6 filter FORWARD 0 -i %i -o `ip route|grep default|awk '{print $5}'` -j ACCEPT
 
 # firewall-cmd --permanent --remove-rich-rule="rule family=ipv6 source address=fd10:db31:0203:ab31::1/64 masquerade"
 # firewall-cmd --permanent --direct --remove-rule ipv6 filter FORWARD 0 -i %i -o `ip route|grep default|awk '{print $5}'` -j ACCEPT
-
 # firewall-cmd --reload
 
 [Interface]
@@ -137,7 +135,6 @@ cat << EOFF > $cconf
 
 #PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE; ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
 #PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE; ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
-
 
 # ClientPrivateKey
 PrivateKey = $privkey
