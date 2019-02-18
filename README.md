@@ -7,15 +7,18 @@
 
 > 将脚本下载到/etc/wireguard文件夹内。
 
+```sh
+mkdir /etc/wireguard
+cd /etc/wireguard
+git clone https://github.com/nexply/WGconfScript.git
+cd ./WGconfScript
+bash wgset.sh
+```
+
 > removeip.py 脚本可从某网段排除特定IP，方便特殊情况配置 “AllowedIPs”
 
 ```
+cd /etc/wireguard/WGconfScript
 pip install -r requirement.txt
 python removeip.py 0.0.0.0/0 -r 192.168.1.0/24
-```
-
-## 运行配置脚本
-```sh
-cd /etc/wireguard
-bash wgset.sh
 ```
