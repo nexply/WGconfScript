@@ -9,7 +9,13 @@
 
 > removeip.py 脚本可从某网段排除特定IP，方便特殊情况配置 “AllowedIPs”
 
-## 运行脚本
+```
+pip install -r requirement.txt
+python removeip.py 0.0.0.0/0 -r 192.168.1.0/24
+```
+
+## 运行配置脚本
 ```sh
+cd /etc/wireguard
 bash wgset.sh
 ```
