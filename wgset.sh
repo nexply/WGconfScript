@@ -14,10 +14,10 @@ function yellow(){
 }
 
 # 随机数生成
-rand(){
+function rand(){
     min=$1
     max=$(($2-$min+1))
-    num=$(cat /dev/urandom | head -n 10 | cksum | awk -F ' ' '{print $1}')
+    num=$(date +%s%N)
     echo $(($num%$max+$min))
 }
 
