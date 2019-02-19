@@ -102,8 +102,8 @@ function mkclient(){
     if [ -z "${cname}" ]; then
         cname="client"
     fi
-    webip=$(curl -s ip.6655.com/ip.aspx)
-    echo "Webip	${webip}"
+    webip=$(curl -s ifconfig.me)
+    echo "Webip ${webip}"
     if [ -n "${webip}" ]; then
         serverip=${webip}
     else
