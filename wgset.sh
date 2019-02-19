@@ -60,7 +60,7 @@ function mkserver(){
 
 # 生成服务器配置文件
 cat > ${sconf} << EOFF
-# ${sconf}
+# Server: ${sconf}
 # privatekey: ${privkey}
 # pubkey: ${pubkey}
 
@@ -117,10 +117,10 @@ function mkclient(){
     if [ -z "${allowip}" ]; then
         allowip="0.0.0.0/0 ::0/0"
     fi
-    caddra=$(cat ${sconf} |grep Address | awk '{print $3}' | awk -F. '{print $1"."$2"."$3"."}')
-    spubkey=$(cat ${sconf} | grep "# pubkey:" | awk '{print $3}')
-    sport=$(cat ${sconf} | grep "ListenPort" | awk '{print $3}')
-    ipnum=$(grep AllowedIPs ${sconf} | tail -1 | awk -F '[./]' '{print $4}')
+    caddra=$(grep Address ${sconf}|awk -F '[ .]' '{print $3"."$4"."$5"."}')
+    spubkey=$(grep "# pubkey:" ${sconf}|awk '{print $3}')
+    sport=$(grep "ListenPort" ${sconf}|awk '{print $3}')
+    ipnum=$(grep AllowedIPs ${sconf}|tail -1|awk -F '[./]' '{print $4}')
     if [ -z "${ipnum}" ]; then
         ipnum=1
     fi
@@ -147,8 +147,7 @@ function mkclient(){
         fi
         mkkey
 cat > ${cconf} << EOFF
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# ${cconf}
+# Client: ${cconf}
 # privatekey: ${privkey}
 # pubkey: ${pubkey}
 
@@ -160,9 +159,9 @@ Address = ${caddra}${i}/24
 DNS = 1.1.1.1
 
 [Peer]
-Endpoint = ${saddr}:${sport}
 # ServerPublicKey
 PublicKey = ${spubkey}
+Endpoint = ${saddr}:${sport}
 AllowedIPs = ${allowip}
 PersistentKeepalive = 25
 
@@ -205,7 +204,7 @@ function menu(){
 	fi
     if [ ! -f "$sconf" ]; then
         red "\"$sconf\" 不存在！！"
-        green $(ls)
+        yellow $(ls)
         sleep 2s
         menu
     fi
