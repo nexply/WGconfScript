@@ -1,40 +1,68 @@
 #!/bin/bash
+
+function blue(){
+    echo -e "\033[34;01m $1 \033[0m"
+}
+function green(){
+    echo -e "\033[32;01m $1 \033[0m"
+}
+function red(){
+    echo -e "\033[31;01m $1 \033[0m"
+}
+function yellow(){
+    echo -e "\033[33;01m $1 \033[0m"
+}
+
+# 随机数生成
+rand(){
+    min=$1
+    max=$(($2-$min+1))
+    num=$(cat /dev/urandom | head -n 10 | cksum | awk -F ' ' '{print $1}')
+    echo $(($num%$max+$min))
+}
+
 clear
 # 切换目录
-if [ ! -f "$sconf" ]; then
+if [ ! -d "/etc/wireguard" ]; then
 	mkdir /etc/wireguard
 fi
 cd /etc/wireguard
 
 # 生成key
-function mkkey {
-privkey=`wg genkey`
-pubkey=`echo $privkey | wg pubkey`
+function mkkey() {
+    privkey=`wg genkey`
+    pubkey=`echo $privkey | wg pubkey`
 }
 
 # 生成服务器配置
-function server {
-clear
-echo -e "\033[33m `ls` \033[0m"
-echo -e "\033[34m\033[01m 输入服务器配置文件名 \033[0m"
-read -e -p "Enter the server profile name: " sname
-sconf=${sname}.conf
-if [ -f "$sconf" ]; then
-	echo -e "\033[31m\033[01m Profile \"$sconf\" already exists!! \033[0m"
-	exit
-fi
-echo -e "\033[34m\033[01m 设置虚拟局域网络地址 \033[0m"
-read -e -p "Set the VPN server address[10.*.*.1]: " svaddr
-echo -e "\033[34m\033[01m 设置服务器监听端口 \033[0m"
-read -e -p "Enter ListenPort: " port
-mkkey
+function mkserver(){
+    clear
+    yellow $(ls)
+    read -e -p "输入服务器配置文件名[默认为 wg0.conf]: " sname
+	if [ -z "${sname}" ];then
+        sname="wg0"
+    fi
+	sconf=${sname}.conf
+    if [ -f "${sconf}" ]; then
+        red " 文件 \"${sconf}\" 已存在!! "
+        sleep 2s
+        menu
+    fi
+    read -e -p "设置虚拟局域网络地址[默认为 10.12.12.1]: " svaddr
+	if [ -z "${svaddr}" ];then
+        svaddr="10.12.12.1"
+    fi
+    read -e -p "设置服务器监听端口[默认10000-60000随机]：" port
+    if [ -z "${port}" ]; then
+        port=$(rand 10000 60000)
+    fi
+    mkkey
 
-# 写入服务器配置文件
-cat << EOFF >> $sconf
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Server
-# privatekey: $privkey
-# pubkey: $pubkey
+# 生成服务器配置文件
+cat > ${sconf} << EOFF
+# ${sconf}
+# privatekey: ${privkey}
+# pubkey: ${pubkey}
 
 # CentOS运行Wireguard服务器时需要设置如下防火墙策略，并且开启IP转发功能。
 # firewall cmd:
@@ -46,145 +74,153 @@ cat << EOFF >> $sconf
 
 # ipv6
 # firewall-cmd --permanent --add-rich-rule="rule family=ipv6 source address=fd10:db31:0203:ab31::1/64 masquerade"
-# firewall-cmd --permanent --direct --add-rule ipv6 filter FORWARD 0 -i %i -o `ip route|grep default|awk '{print $5}'` -j ACCEPT
+# firewall-cmd --permanent --direct --add-rule ipv6 filter FORWARD 0 -i ${sname} -o `ip route|grep default|awk '{print $5}'` -j ACCEPT
 
 # firewall-cmd --permanent --remove-rich-rule="rule family=ipv6 source address=fd10:db31:0203:ab31::1/64 masquerade"
-# firewall-cmd --permanent --direct --remove-rule ipv6 filter FORWARD 0 -i %i -o `ip route|grep default|awk '{print $5}'` -j ACCEPT
+# firewall-cmd --permanent --direct --remove-rule ipv6 filter FORWARD 0 -i ${sname} -o `ip route|grep default|awk '{print $5}'` -j ACCEPT
 # firewall-cmd --reload
 
 [Interface]
 # Ubuntu服务器运行 WireGuard 时要执行的 iptables 防火墙规则，用于打开NAT转发之类的。
 # 如果你的服务器主网卡名称不是 eth0 ，那么请修改下面防火墙规则中最后的 eth0 为你的主网卡名称。
-
-#PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
-#PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
-
 #PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE; ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
 #PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE; ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
 
 # ServerPriateKey
-PrivateKey = $privkey
+PrivateKey = ${privkey}
 Address = ${svaddr}/24
-ListenPort = $port
+ListenPort = ${port}
 
 EOFF
 }
 
 # 生成客户端配置
-function clien {
-clear
-echo -e "\033[32m `cat $sconf` \033[0m"
-echo -e "\033[34m\033[01m 输入客户端配置文件名称 \033[0m"
-read -e -p "Enter the client profile name: " cname
-
-ip a|grep inet|grep brd|awk '{print $1"\t"$2}'
-webip=`curl -s ip.6655.com/ip.aspx`
-echo "webip	$webip"
-echo -e "\033[34m\033[01m 输入服务公网IP \033[0m"
-read -e -p "Enter server address[serverIP]: " saddr
-echo -e "\033[34m\033[01m 设置客户端转发IP段，0.0.0.0/0表示全局转发 \033[0m"
-read -e -p "Enter AllowedIPs[0.0.0.0/0, ::0/0]: " allowip
-
-caddra=`cat $sconf |grep Address | awk '{print $3}' | awk -F. '{print $1"."$2"."$3"."}'`
-spubkey=`cat $sconf | grep "# pubkey:" | awk '{print $3}'`
-sport=`cat $sconf | grep "ListenPort =" | awk '{print $3}'`
-
-# echo -e "\033[33m `ls` \033[0m"
-echo -e "\033[34m\033[01m 设置本次配置第一个客户端 IP 末尾数字,范围 2<=X<=254 \033[0m"
-read -e -p "Enter first number: " numa
-if [ $numa -lt 2 ]; then
-	echo -e "\033[31m\033[01m 起始编号不能小于 2 !! \033[0m"
-	exit
-fi
-echo -e "\033[34m\033[01m 设置本次配置最后一个客户端 IP 末尾数字,范围 X<=Y<=254 \033[0m"
-read -e -p "Enter last number: " numb
-if [ $numa -gt $numb ]; then
-	echo -e "\033[31m\033[01m 结束编号不能小于起始编号 !!! \033[0m"
-	exit
-fi
-
-# 写入客户端配置文件
-while [ ${numb} -ge ${numa} ]; do
-
-cconf=${cname}${numa}.conf
-# 判断客户端配置文件是否存在
-if [ -f "$cconf" ]; then
-	echo -e "\033[31m\033[01m Profile \"$cconf\" already exists!! \033[0m"
-	exit
-fi
-# 判断客户端IP是否已经使用
-clienIP=`cat $sconf |grep "${caddra}${numa}/32"`
-if [ -n "${clienIP}" ]; then
-	echo -e "\033[31m\033[01m Clien'IP \"${caddra}${numa}\" already exists!! \033[0m"
-	exit
-fi
-
-mkkey
-cat << EOFF > $cconf
+function mkclient(){
+    clear
+    blue "$(cat $sconf)"
+    read -e -p "输入客户端配置文件名称[默认为 \"client\"]: " cname
+    if [ -z "${cname}" ]; then
+        cname="client"
+    fi
+    webip=$(curl -s ip.6655.com/ip.aspx)
+    echo "Webip	${webip}"
+    if [ -n "${webip}" ]; then
+        serverip=${webip}
+    else
+        red "未采集到IP！！请手动输入！！"
+    fi
+    read -e -p "输入服务器IP[默认 ${serverip}]: " saddr
+    if [ -z "${saddr}" ]; then
+        saddr=${serverip}
+    fi
+    read -e -p "设置客户端转发IP段[默认为 0.0.0.0/0, ::0/0 表示全局转发]: " allowip
+    if [ -z "${allowip}" ]; then
+        allowip="0.0.0.0/0 ::0/0"
+    fi
+    caddra=$(cat ${sconf} |grep Address | awk '{print $3}' | awk -F. '{print $1"."$2"."$3"."}')
+    spubkey=$(cat ${sconf} | grep "# pubkey:" | awk '{print $3}')
+    sport=$(cat ${sconf} | grep "ListenPort" | awk '{print $3}')
+    ipnum=$(grep AllowedIPs ${sconf} | tail -1 | awk -F '[./]' '{print $4}')
+    if [ -z "${ipnum}" ]; then
+        ipnum=1
+    fi
+    newnum=$((10#${ipnum}+1))
+    read -e -p "输入生成客户端文件个数[默认为 1 ]: " clientnums
+    if [ -z "${clientnums}" ]; then
+        clientnums=1
+    fi
+    endnum=$((10#${ipnum}+${clientnums}))
+    # 写入客户端配置文件
+    for (( i=${newnum}; i <= ${endnum}; i++ ))
+    do
+        cconf=${cname}${i}.conf
+        # 判断客户端配置文件是否存在
+        if [ -f "${cconf}" ]; then
+            red "客户端文件 \"$cconf\" 已经存在!!"
+            exit
+        fi
+        # 判断客户端IP是否已经使用
+        clienIP=$(cat $sconf |grep "${caddra}${i}/32")
+        if [ -n "${clienIP}" ]; then
+            red "客户端 IP \"${caddra}${i}\" 已经使用!!"
+            exit
+        fi
+        mkkey
+cat > ${cconf} << EOFF
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Client
-# privatekey: $privkey
-# pubkey: $pubkey
+# ${cconf}
+# privatekey: ${privkey}
+# pubkey: ${pubkey}
 
 [Interface]
-#PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
-#PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
-
-#PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE; ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
-#PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE; ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
-
 # ClientPrivateKey
-PrivateKey = $privkey
-Address = ${caddra}${numa}/24
+PrivateKey = ${privkey}
+Address = ${caddra}${i}/24
 # Switch DNS server while connected
-#DNS = 1.1.1.1
+DNS = 1.1.1.1
 
 [Peer]
-Endpoint = ${saddr}:$sport
+Endpoint = ${saddr}:${sport}
 # ServerPublicKey
-PublicKey = $spubkey
-AllowedIPs = $allowip
+PublicKey = ${spubkey}
+AllowedIPs = ${allowip}
 PersistentKeepalive = 25
 
 EOFF
 
 # 给服务器增加[Peer]配置
-cat << EOFE >> $sconf
+cat >> ${sconf} << EOFE
 [Peer]
-# $cconf
+# ${cconf}
 # ClientPublicKey
-PublicKey = $pubkey
-AllowedIPs = ${caddra}${numa}/32
+PublicKey = ${pubkey}
+AllowedIPs = ${caddra}${i}/32
 
 EOFE
-numa=$[${numa}+1]
-done
-
-clear
-echo -e "\033[32m `cat $sconf` \033[0m"
+    done
+	
+    clear
+    blue "$(cat ${sconf})"
 }
 
 # 菜单
-PS3="Enter option: "
-select option in "Create server configuration（创建服务器配置）" "Add client configuration（增加客户端配置）"
-do
-case $option in
-"Create server configuration（创建服务器配置）")
-server
-clien
-exit ;;
-"Add client configuration（增加客户端配置）")
-echo -e "\033[33m `ls` \033[0m"
-echo -e "\033[34m\033[01m 输入匹配的服务端配置文件名字 \033[0m"
-read -e -p "Enter the server profile name[**.conf]: " sconf
-if [ ! -f "$sconf" ]; then
-	echo -e "\033[31m\033[01m Profile \"$sconf\" does not exist!! \033[0m"
-	ls
-	exit
-fi
-clien
-exit ;;
-*)
-echo -e "\033[31m\033[01m Sorry, wrong selection!! \033[0m";;
-esac
-done
+function menu(){
+    clear
+    echo
+    green " 1. 创建服务器配置"
+    green " 2. 增加客户端配置"
+    yellow " 0. 退出脚本"
+    echo
+    read -e -p "请输入数字:" num
+    case "$num" in
+    1)
+    mkserver
+    mkclient
+    ;;
+    2)
+    yellow "$(ls)"
+    read -e -p "输入匹配的服务端配置文件名字[默认为 wg0.conf]: " sconf
+	if [ -z ${sconf} ]; then
+		sconf="wg0.conf"
+	fi
+    if [ ! -f "$sconf" ]; then
+        red "\"$sconf\" 不存在！！"
+        green $(ls)
+        sleep 2s
+        menu
+    fi
+    mkclient
+    ;;
+    0)
+    exit 1
+    ;;
+    *)
+    clear
+    red "请输入正确数字"
+    sleep 2s
+    menu
+    ;;
+    esac
+}
+
+menu
