@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function blue(){
     echo -e "\033[34;01m $1 \033[0m"
@@ -24,7 +24,7 @@ function rand(){
 clear
 # 切换目录
 if [ ! -d "/etc/wireguard" ]; then
-	mkdir /etc/wireguard
+    mkdir /etc/wireguard
 fi
 cd /etc/wireguard
 
@@ -39,17 +39,17 @@ function mkserver(){
     clear
     yellow $(ls)
     read -e -p "输入服务器配置文件名[默认为 wg0.conf]: " sname
-	if [ -z "${sname}" ];then
+    if [ -z "${sname}" ];then
         sname="wg0"
     fi
-	sconf=${sname}.conf
+    sconf=${sname}.conf
     if [ -f "${sconf}" ]; then
         red " 文件 \"${sconf}\" 已存在!! "
         sleep 2s
         menu
     fi
     read -e -p "设置虚拟局域网络地址[默认为 10.12.12.1]: " svaddr
-	if [ -z "${svaddr}" ];then
+    if [ -z "${svaddr}" ];then
         svaddr="10.12.12.1"
     fi
     read -e -p "设置服务器监听端口[默认10000-60000随机]：" port
@@ -177,7 +177,7 @@ AllowedIPs = ${caddra}${i}/32
 
 EOFE
     done
-	
+    
     clear
     blue "$(cat ${sconf})"
 }
@@ -199,9 +199,9 @@ function menu(){
     2)
     yellow "$(ls)"
     read -e -p "输入匹配的服务端配置文件名字[默认为 wg0.conf]: " sconf
-	if [ -z ${sconf} ]; then
-		sconf="wg0.conf"
-	fi
+    if [ -z ${sconf} ]; then
+        sconf="wg0.conf"
+    fi
     if [ ! -f "$sconf" ]; then
         red "\"$sconf\" 不存在！！"
         yellow $(ls)
