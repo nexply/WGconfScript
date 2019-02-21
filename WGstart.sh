@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 
 function blue {
-    echo -e "\033[34;01m $1 \033[0m"
+    echo -e " \033[34;01m $1 \033[0m"
 }
 function green {
-    echo -e "\033[32;01m $1 \033[0m"
+    echo -e " \033[32;01m $1 \033[0m"
 }
 function red {
-    echo -e "\033[31;01m $1 \033[0m"
+    echo -e " \033[31;01m $1 \033[0m"
 }
 function yellow {
-    echo -e "\033[33;01m $1 \033[0m"
+    echo -e " \033[33;01m $1 \033[0m"
 }
 
 
@@ -20,6 +20,7 @@ function checkconf {
     if [ -e "/root/.ssh/$1" ]
     then
         chmod 644 /root/.ssh/$1 2>&1
+        green "OK!"
     else
         red "SSH 密钥文件不存在，请检查"
     fi
@@ -41,6 +42,7 @@ function checksys {
         then
             wgconfname=$(ls /etc/wireguard/|head -1|awk -F. '{print $1}')
             chmod 600 /etc/wireguard/${wgconfname}.conf 2>&1
+            green "OK!"
         else
             red "wireguard 配置文件出错，请检查"
             exit 1
@@ -56,6 +58,7 @@ function checksys {
         if [ -e /etc/wireguard/${wgconfname}.conf ]
         then
             chmod 600 /etc/wireguard/${wgconfname}.conf 2>&1
+            green "OK!"
         else
             red "wireguard 配置文件出错，请检查"
             exit 1
@@ -83,14 +86,15 @@ function stopwg-quick {
 function startservice {
     checksys
     stopwg-quick ${wgconfname}
+    green "启动 Wireguard 服务 wg-quick@${wgconfname}！"
     systemctl restart wg-quick@${wgconfname}
+    green "OK！"
     sleep 1s
     wg
     echo
     green "将 Wireguard 服务 wg-quick@${wgconfname} 设为开机启动！"
     systemctl enable wg-quick@${wgconfname}
-    echo
-    green "done"
+    green "OK！"
 }
 
 
@@ -104,6 +108,7 @@ function stopservice {
         then
         yellow "将 Wireguard 服务 wg-quick@${wgconfname} 停止！"
         systemctl stop wg-quick@${wgconfname}
+        green "OK！"
         fi
     else
         red "服务 wg-quick@${wgconfname} 没有运行！"
@@ -118,10 +123,12 @@ function disableservice {
     then
         yellow "取消服务 wg-quick@${wgconfname} 开机启动设置！！"
         systemctl disable wg-quick@${wgconfname}
+        green "OK！"
     else
         checksys
         yellow "取消服务 wg-quick@${wgconfname} 开机启动设置！！"
         systemctl disable wg-quick@${wgconfname}
+        green "OK！"
     fi  
 
 }
@@ -132,10 +139,10 @@ function menu {
     clear
     green "~~ScoutV2 Wireguard 服务脚本~~"
     echo
-    green " 1. 启动&重启WG服务"
-    green " 2. 停止WG服务"
-    green " 3. 取消开机启动"
-    yellow " 0. 退出脚本"
+    green "1. 启动&重启WG服务"
+    green "2. 停止WG服务"
+    green "3. 取消开机启动"
+    yellow "0. 退出脚本"
     echo
     read -e -p "请输入数字:" num
     case "$num" in
