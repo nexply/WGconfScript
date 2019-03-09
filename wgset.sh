@@ -83,8 +83,10 @@ cat > ${sconf} << EOFF
 [Interface]
 # Ubuntu服务器运行 WireGuard 时要执行的 iptables 防火墙规则，用于打开NAT转发之类的。
 # 如果你的服务器主网卡名称不是 eth0 ，那么请修改下面防火墙规则中最后的 eth0 为你的主网卡名称。
-#PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE; ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
-#PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE; ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
+#PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
+#; ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -t nat -A POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
+#PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
+#; ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -t nat -D POSTROUTING -o `ip route|grep default|awk '{print $5}'` -j MASQUERADE
 
 # ServerPriateKey
 PrivateKey = ${privkey}
@@ -115,7 +117,7 @@ function mkclient(){
     fi
     read -e -p "设置客户端转发IP段[默认为 0.0.0.0/0, ::0/0 表示全局转发]: " allowip
     if [ -z "${allowip}" ]; then
-        allowip="0.0.0.0/0 ::0/0"
+        allowip="0.0.0.0/0"
     fi
     caddra=$(grep Address ${sconf}|awk -F '[ .]' '{print $3"."$4"."$5"."}')
     spubkey=$(grep "# pubkey:" ${sconf}|awk '{print $3}')
