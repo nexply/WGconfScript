@@ -27,7 +27,7 @@ def main():
     except Exception as e:
             print '-r IP输入错误：{}'.format(e)
     print '\n拆分后的网段段为：\n'
-    print ', '.join(outip for outip in map(str, ips.iter_cidrs()))
+    print ','.join(outip for outip in map(str, ips.iter_cidrs()))
 
 
 if __name__ == '__main__':
