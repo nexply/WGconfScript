@@ -14,21 +14,60 @@ function yellow {
 }
 
 
-# 检查系统版本
+# 检查密钥配置文件
 function checkconf {
-    clear
-    yellow "检查 wireguard 配置文件~~"
-    if [ $(ls /etc/wireguard/|xargs -n1|wc -l) -eq 1 ]
+    yellow "检查 SSH 密钥 $1 是否存在~~"
+    if [ -e "/root/.ssh/$1" ]
     then
-        wgconfname=$(ls /etc/wireguard/|head -1|awk -F.conf '{print $1}')
-        chmod 600 /etc/wireguard/${wgconfname}.conf 2>&1
+        chmod 644 /root/.ssh/$1 2>&1
         green "OK!"
     else
-        red "wireguard 配置文件出错，请检查配置文件是否放入指定位置，或者存在多个配置文件！！"
-        exit 1
+        red "SSH 密钥文件不存在，请检查"
     fi
     echo
     sleep 1s
+}
+
+
+# 检查系统版本
+function checksys {
+    clear
+    if [ -n "$(grep Raspbian /etc/*release)" ]
+    then
+        blue "系统为 Raspbian"
+        echo
+        checkconf "authorized_keys"
+        yellow "检查 wireguard 配置文件~~"
+        if [ $(ls /etc/wireguard|wc -l) -eq 1 ]
+        then
+            wgconfname=$(ls /etc/wireguard/|head -1|awk -F. '{print $1}')
+            chmod 600 /etc/wireguard/${wgconfname}.conf 2>&1
+            green "OK!"
+        else
+            red "wireguard 配置文件出错，请检查"
+            exit 1
+        fi
+        echo
+        sleep 1s
+    elif [ -n "$(grep CentOS /etc/*release)" ]
+    then
+        blue "系统为 CentOS"
+        checkconf "id_rsa"
+        yellow "检查 wireguard 配置文件~~"
+        wgconfname="wg0"
+        if [ -e /etc/wireguard/${wgconfname}.conf ]
+        then
+            chmod 600 /etc/wireguard/${wgconfname}.conf 2>&1
+            green "OK!"
+        else
+            red "wireguard 配置文件出错，请检查"
+            exit 1
+        fi
+        echo
+        sleep 1s
+    else
+        red "未检测到系统！！"
+    fi
 }
 
 
@@ -45,7 +84,7 @@ function stopwg-quick {
 
 # 启动服务
 function startservice {
-    checkconf
+    checksys
     stopwg-quick ${wgconfname}
     green "启动 Wireguard 服务 wg-quick@${wgconfname}！"
     systemctl restart wg-quick@${wgconfname}
@@ -86,7 +125,7 @@ function disableservice {
         systemctl disable wg-quick@${wgconfname}
         green "OK！"
     else
-        checkconf
+        checksys
         yellow "取消服务 wg-quick@${wgconfname} 开机启动设置！！"
         systemctl disable wg-quick@${wgconfname}
         green "OK！"
@@ -105,7 +144,7 @@ function menu {
     green "3. 取消开机启动"
     yellow "0. 退出脚本"
     echo
-    read -e -p "  请输入数字:" num
+    read -e -p "请输入数字:" num
     case "$num" in
     1)
     startservice
@@ -120,7 +159,8 @@ function menu {
     exit 1
     ;;
     *)
-    red "请输入正确数字！！"
+    clear
+    red "请输入正确数字"
     sleep 2s
     menu
     ;;
