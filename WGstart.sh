@@ -18,9 +18,9 @@ function yellow {
 function checkconf {
     clear
     yellow "检查 wireguard 配置文件~~"
-    if [ $(ls /etc/wireguard/ |wc -l) -eq 1 ]
+    if [ $(ls /etc/wireguard/*.conf|wc -l) -eq 1 ]
     then
-        wgconfname=$(ls /etc/wireguard/|head -1|awk -F.conf '{print $1}')
+        wgconfname=$(ls /etc/wireguard/*.conf|head -1|awk -F[/.] '{print $4}')
         chmod 600 /etc/wireguard/${wgconfname}.conf 2>&1
         green "OK!"
     else
