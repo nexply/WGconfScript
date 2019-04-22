@@ -18,9 +18,9 @@ function yellow {
 function checkconf {
     clear
     yellow "检查 wireguard 配置文件~~"
-    if [ $(ls /etc/wireguard/*.conf|wc -l) -eq 1 ]
+    if [ $(ls /etc/wireguard/ |wc -l) -eq 1 ]
     then
-        wgconfname=$(ls /etc/wireguard/*.conf|head -1|awk -F[/.] '{print $4}')
+        wgconfname=$(ls /etc/wireguard/|head -1|awk -F.conf '{print $1}')
         chmod 600 /etc/wireguard/${wgconfname}.conf 2>&1
         green "OK!"
     else
@@ -32,23 +32,26 @@ function checkconf {
 }
 
 
-# 停止wg-quick脚本启动的服务
+# 停止wg服务
 function stopwg-quick {
-    wgstatus=$(systemctl status wg-quick@${wgconfname} 2>&1|grep "active (exited)")
-    if [ -n "$(wg 2>&1)" ] && [ -z "${wgstatus}" ]
-    then
-        yellow "存在由 wg-quick 脚本启动的服务，将其关闭！"
-        wg-quick down ${1} 2>&1
-    fi
+  runingwgname=$(wg|grep interface|awk '{print $2}')
+  yellow "停止WG服务！！"
+  if [ -n "${runingwgname}" ]
+  then
+    systemctl stop wg-quick@${runingwgname}
+    systemctl disable wg-quick@${runingwgname}
+    wg-quick down ${runingwgname} > /dev/null 2>&1
+  fi
+  green "OK! "
 }
 
 
 # 启动服务
 function startservice {
     checkconf
-    stopwg-quick ${wgconfname}
+    stopwg-quick
     green "启动 Wireguard 服务 wg-quick@${wgconfname}！"
-    systemctl restart wg-quick@${wgconfname}
+    systemctl start wg-quick@${wgconfname}
     green "OK！"
     sleep 1s
     wg
@@ -56,24 +59,6 @@ function startservice {
     green "将 Wireguard 服务 wg-quick@${wgconfname} 设为开机启动！"
     systemctl enable wg-quick@${wgconfname}
     green "OK！"
-}
-
-
-# 停止服务
-function stopservice {
-    wgconfname=$(wg |grep interface|awk '{print $2}')
-    if [ -n "${wgconfname}" ]
-    then
-        stopwg-quick ${wgconfname}
-        if [ -n "${wgstatus}" ]
-        then
-        yellow "将 Wireguard 服务 wg-quick@${wgconfname} 停止！"
-        systemctl stop wg-quick@${wgconfname}
-        green "OK！"
-        fi
-    else
-        red "服务 wg-quick@${wgconfname} 没有运行！"
-    fi  
 }
 
 
@@ -111,7 +96,7 @@ function menu {
     startservice
     ;;
     2)
-    stopservice
+    stopwg-quick
     ;;
     3)
     disableservice

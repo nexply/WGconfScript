@@ -38,7 +38,7 @@ function mkkey() {
 function mkserver(){
     clear
     yellow $(ls)
-    read -e -p "输入服务器配置文件名[默认为 wg0.conf]: " sname
+    read -e -p "输入服务器配置文件名[默认为 wg0]: " sname
     if [ -z "${sname}" ];then
         sname="wg0"
     fi
@@ -165,7 +165,7 @@ DNS = 1.1.1.1
 PublicKey = ${spubkey}
 Endpoint = ${saddr}:${sport}
 AllowedIPs = ${allowip}
-PersistentKeepalive = 25
+PersistentKeepalive = 15
 
 EOFF
 
