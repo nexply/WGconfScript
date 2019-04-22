@@ -16,7 +16,6 @@ function yellow {
 
 # 检查系统版本
 function checkconf {
-    clear
     yellow "检查 wireguard 配置文件~~"
     if [ $(ls /etc/wireguard/ |wc -l) -eq 1 ]
     then
@@ -25,9 +24,9 @@ function checkconf {
         green "OK!"
     else
         red "wireguard 配置文件出错，请检查配置文件是否放入指定位置，或者存在多个配置文件！！"
+	yellow "查看命令示例：sudo ls /etc/wireguard/ "
         exit 1
     fi
-    echo
     sleep 1s
 }
 
@@ -35,6 +34,7 @@ function checkconf {
 # 停止wg服务
 function stopwg-quick {
   runingwgname=$(wg|grep interface|awk '{print $2}')
+<<<<<<< HEAD
   yellow "停止WG服务！！"
   if [ -n "${runingwgname}" ]
   then
@@ -43,6 +43,18 @@ function stopwg-quick {
     wg-quick down ${runingwgname} > /dev/null 2>&1
   fi
   green "OK! "
+=======
+  if [ -n "${runingwgname}" ]
+  then
+    yellow "停止WG服务！！"
+    systemctl stop wg-quick@${runingwgname}
+    systemctl disable wg-quick@${runingwgname}
+    wg-quick down ${runingwgname} > /dev/null 2>&1
+    green "OK! "
+  else
+    red "WG服务没有运行！！"
+  fi
+>>>>>>> ec49e4eb093c13b329824700a96d1ef36cf40709
 }
 
 
@@ -55,7 +67,6 @@ function startservice {
     green "OK！"
     sleep 1s
     wg
-    echo
     green "将 Wireguard 服务 wg-quick@${wgconfname} 设为开机启动！"
     systemctl enable wg-quick@${wgconfname}
     green "OK！"
@@ -89,7 +100,6 @@ function menu {
     green "2. 停止WG服务"
     green "3. 取消开机启动"
     yellow "0. 退出脚本"
-    echo
     read -e -p "  请输入数字:" num
     case "$num" in
     1)
