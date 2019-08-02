@@ -105,9 +105,9 @@ function mkclient(){
     if [ -z "${saddr}" ]; then
         saddr=${serverip}
     fi
-    read -e -p "设置客户端转发IP段[默认为 0.0.0.0/0, ::0/0 表示全局转发]: " allowip
+    read -e -p "设置客户端转发IP段[默认为 ${svaddr}/24]: " allowip
     if [ -z "${allowip}" ]; then
-        allowip="0.0.0.0/0"
+        allowip=${svaddr}/24
     fi
     caddra=$(grep Address ${sconf}|awk -F '[ .]' '{print $3"."$4"."$5"."}')
     spubkey=$(grep "# pubkey:" ${sconf}|awk '{print $3}')
