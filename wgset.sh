@@ -149,7 +149,7 @@ cat > ${cconf} << EOFF
 PrivateKey = ${privkey}
 Address = ${caddra}${i}/24
 # Switch DNS server while connected
-DNS = 1.1.1.1
+# DNS = 1.1.1.1
 
 [Peer]
 # ServerPublicKey
