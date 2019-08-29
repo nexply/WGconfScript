@@ -139,6 +139,7 @@ function mkclient(){
             exit
         fi
         mkkey
+
 cat > ${cconf} << EOFF
 # Client: ${cconf}
 # privatekey: ${privkey}
