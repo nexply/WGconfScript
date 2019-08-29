@@ -105,6 +105,7 @@ function mkclient(){
     if [ -z "${saddr}" ]; then
         saddr=${serverip}
     fi
+    svaddr=$(grep Address ${sconf}|awk '{print $3}' |awk -F/ '{print $1}')
     read -e -p "设置客户端转发IP段[默认为 ${svaddr}/24]: " allowip
     if [ -z "${allowip}" ]; then
         allowip=${svaddr}/24
