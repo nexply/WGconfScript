@@ -94,7 +94,7 @@ function mkclient(){
     if [ -z "${cname}" ]; then
         cname="client"
     fi
-    webip=$(curl -s ifconfig.me)
+    webip=$(curl -s --connect-timeout 10 ifconfig.me)
     echo "Webip ${webip}"
     if [ -n "${webip}" ]; then
         serverip=${webip}
