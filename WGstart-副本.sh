@@ -1,24 +1,22 @@
 #!/usr/bin/env bash
 
-function blue {
+function blue() {
     echo -e " \033[34;01m $1 \033[0m"
 }
-function green {
+function green() {
     echo -e " \033[32;01m $1 \033[0m"
 }
-function red {
+function red() {
     echo -e " \033[31;01m $1 \033[0m"
 }
-function yellow {
+function yellow() {
     echo -e " \033[33;01m $1 \033[0m"
 }
 
-
 # 检查密钥配置文件
-function checkconf {
+function checkconf() {
     yellow "检查 SSH 密钥 $1 是否存在~~"
-    if [ -e "/root/.ssh/$1" ]
-    then
+    if [ -e "/root/.ssh/$1" ]; then
         chmod 644 /root/.ssh/$1 2>&1
         green "OK!"
     else
@@ -28,19 +26,16 @@ function checkconf {
     sleep 1s
 }
 
-
 # 检查系统版本
-function checksys {
+function checksys() {
     clear
-    if [ -n "$(grep Raspbian /etc/*release)" ]
-    then
+    if [ -n "$(grep Raspbian /etc/*release)" ]; then
         blue "系统为 Raspbian"
         echo
         checkconf "authorized_keys"
         yellow "检查 wireguard 配置文件~~"
-        if [ $(ls /etc/wireguard|wc -l) -eq 1 ]
-        then
-            wgconfname=$(ls /etc/wireguard/|head -1|awk -F. '{print $1}')
+        if [ $(ls /etc/wireguard | wc -l) -eq 1 ]; then
+            wgconfname=$(ls /etc/wireguard/ | head -1 | awk -F. '{print $1}')
             chmod 600 /etc/wireguard/${wgconfname}.conf 2>&1
             green "OK!"
         else
@@ -49,14 +44,12 @@ function checksys {
         fi
         echo
         sleep 1s
-    elif [ -n "$(grep CentOS /etc/*release)" ]
-    then
+    elif [ -n "$(grep CentOS /etc/*release)" ]; then
         blue "系统为 CentOS"
         checkconf "id_rsa"
         yellow "检查 wireguard 配置文件~~"
         wgconfname="wg0"
-        if [ -e /etc/wireguard/${wgconfname}.conf ]
-        then
+        if [ -e /etc/wireguard/${wgconfname}.conf ]; then
             chmod 600 /etc/wireguard/${wgconfname}.conf 2>&1
             green "OK!"
         else
@@ -70,20 +63,17 @@ function checksys {
     fi
 }
 
-
 # 停止wg-quick脚本启动的服务
-function stopwg-quick {
-    wgstatus=$(systemctl status wg-quick@${wgconfname} 2>&1|grep "active (exited)")
-    if [ -n "$(wg 2>&1)" ] && [ -z "${wgstatus}" ]
-    then
+function stopwg-quick() {
+    wgstatus=$(systemctl status wg-quick@${wgconfname} 2>&1 | grep "active (exited)")
+    if [ -n "$(wg 2>&1)" ] && [ -z "${wgstatus}" ]; then
         yellow "存在由 wg-quick 脚本启动的服务，将其关闭！"
         wg-quick down ${1} 2>&1
     fi
 }
 
-
 # 启动服务
-function startservice {
+function startservice() {
     checksys
     stopwg-quick ${wgconfname}
     green "启动 Wireguard 服务 wg-quick@${wgconfname}！"
@@ -97,30 +87,25 @@ function startservice {
     green "OK！"
 }
 
-
 # 停止服务
-function stopservice {
-    wgconfname=$(wg |grep interface|awk '{print $2}')
-    if [ -n "${wgconfname}" ]
-    then
+function stopservice() {
+    wgconfname=$(wg | grep interface | awk '{print $2}')
+    if [ -n "${wgconfname}" ]; then
         stopwg-quick ${wgconfname}
-        if [ -n "${wgstatus}" ]
-        then
-        yellow "将 Wireguard 服务 wg-quick@${wgconfname} 停止！"
-        systemctl stop wg-quick@${wgconfname}
-        green "OK！"
+        if [ -n "${wgstatus}" ]; then
+            yellow "将 Wireguard 服务 wg-quick@${wgconfname} 停止！"
+            systemctl stop wg-quick@${wgconfname}
+            green "OK！"
         fi
     else
         red "服务 wg-quick@${wgconfname} 没有运行！"
-    fi  
+    fi
 }
 
-
 # 取消开机启动
-function disableservice {
-    wgconfname=$(wg |grep interface|awk '{print $2}')
-    if [ -n "${wgconfname}" ]
-    then
+function disableservice() {
+    wgconfname=$(wg | grep interface | awk '{print $2}')
+    if [ -n "${wgconfname}" ]; then
         yellow "取消服务 wg-quick@${wgconfname} 开机启动设置！！"
         systemctl disable wg-quick@${wgconfname}
         green "OK！"
@@ -129,13 +114,12 @@ function disableservice {
         yellow "取消服务 wg-quick@${wgconfname} 开机启动设置！！"
         systemctl disable wg-quick@${wgconfname}
         green "OK！"
-    fi  
+    fi
 
 }
 
-
 # 菜单
-function menu {
+function menu() {
     clear
     green "~~ScoutV2 Wireguard 服务脚本~~"
     echo
@@ -147,23 +131,23 @@ function menu {
     read -e -p "请输入数字:" num
     case "$num" in
     1)
-    startservice
-    ;;
+        startservice
+        ;;
     2)
-    stopservice
-    ;;
+        stopservice
+        ;;
     3)
-    disableservice
-    ;;
+        disableservice
+        ;;
     0)
-    exit 1
-    ;;
+        exit 1
+        ;;
     *)
-    clear
-    red "请输入正确数字"
-    sleep 2s
-    menu
-    ;;
+        clear
+        red "请输入正确数字"
+        sleep 2s
+        menu
+        ;;
     esac
 }
 
