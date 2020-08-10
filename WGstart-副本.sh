@@ -13,7 +13,7 @@ function yellow() {
     echo -e " \033[33;01m $1 \033[0m"
 }
 
-# 检查密钥配置文件
+# 检查密钥配置文件 test
 function checkconf() {
     yellow "检查 SSH 密钥 $1 是否存在~~"
     if [ -e "/root/.ssh/$1" ]; then
